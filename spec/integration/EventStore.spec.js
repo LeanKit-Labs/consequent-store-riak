@@ -27,7 +27,7 @@ describe( 'Event Store Interface', function() {
 		var records;
 		before( function( done ) {
 			aggId = sliver.getId();
-			store = adapter.create( 'card', {} );
+			store = adapter.events.create( 'card', {} );
 
 			store.storeEvents( aggId, events )
 				.then( function( results ) {
@@ -114,7 +114,7 @@ describe( 'Event Store Interface', function() {
 		var records;
 		before( function( done ) {
 			aggId = sliver.getId();
-			store = adapter.create( 'card', {} );
+			store = adapter.events.create( 'card', {} );
 
 			store.storeEvents( aggId, events )
 				.then( function( results ) {
@@ -156,11 +156,13 @@ describe( 'Event Store Interface', function() {
 		];
 		var id;
 		var record;
+		var clock;
 		before( function( done ) {
 			aggId = sliver.getId();
-			store = adapter.create( 'card', {} );
+			clock = sliver.getId();
+			store = adapter.events.create( 'card', {} );
 
-			store.storeEventPack( aggId, events )
+			store.storeEventPack( aggId, clock, events )
 				.then( function( result ) {
 					id = result;
 					return id;
@@ -189,6 +191,50 @@ describe( 'Event Store Interface', function() {
 		it( 'should index on the aggregate id', function() {
 			record._indexes.aggregate_id.toString().should.equal( aggId );
 			record._indexes.aggregate_pack_id.toString().should.equal( aggId + "-" + id );
+			record._indexes.aggregate_clock.toString().should.equal( aggId + "-" + clock );
+		} );
+
+	} );
+
+	describe( 'when retrieving event packs', function() {
+		var store;
+		var aggId;
+		var events;
+		var id;
+		var records;
+		var clock;
+		before( function( done ) {
+
+			events = [
+				{ name: 'card1', id: sliver.getId() },
+				{ name: 'card2', id: sliver.getId() },
+				{ description: 'abc123', id: sliver.getId() }
+			];
+
+			aggId = sliver.getId();
+			clock = sliver.getId();
+			store = adapter.events.create( 'card', {} );
+
+			store.storeEventPack( aggId, clock, events )
+				.then( function( packId ) {
+					id = packId;
+					store.getEventPackFor( aggId, clock )
+						.then( function( res ) {
+							records = res;
+							done();
+						} );
+				} );
+		} );
+
+		after( function( done ) {
+			riak.card_event_packs.del( id )
+				.then( function() {
+					done();
+				} );
+		} );
+
+		it( 'should return the list of events', function() {
+			records.should.eql( events );
 		} );
 
 	} );

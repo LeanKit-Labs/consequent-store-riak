@@ -1,23 +1,9 @@
-/*
-	var eventDoc = {
-		aggregate_id: "",
-		vectorClock: "", // ???
-		payload: []
-	};
-
-	var eventPackDoc = {
-		aggregate_id: "",
-		vectorClock: "",
-		events: []
-	};
-*/
-
 var util = require( 'util' );
 var _ = require( 'lodash' );
 var when = require( 'when' );
 var sliver = require( './sliver.js' )();
 
-function EventStore( db, type, _config ) {
+function ActorStore( db, type, _config ) {
 
 	this.db = db;
 	this.name = type;
@@ -35,7 +21,7 @@ function EventStore( db, type, _config ) {
 	this.eventPackBucket = this.db.bucket( eventPackBucketName, bucketConfig );
 }
 
-EventStore.prototype.getEventsFor = function( aggregateId, lastEventId ) {
+ActorStore.prototype.getEventsFor = function( aggregateId, lastEventId ) {
 	var indexValue = aggregateId + "-" + lastEventId;
 
 	var onSuccess = function( results ) {
@@ -49,22 +35,23 @@ EventStore.prototype.getEventsFor = function( aggregateId, lastEventId ) {
 		.then( onSuccess );
 };
 
-EventStore.prototype.getEventPackFor = function( aggregateId, vectorClock ) {
+ActorStore.prototype.getEventPackFor = function( aggregateId, vectorClock ) {
 	var indexValue = aggregateId + "-" + vectorClock;
 
 	var onSuccess = function( results ) {
-		var events = results.docs[ 0 ].events;
-
-		return _.sortBy( events, function( d ) {
-			return d.id;
-		} );
+		var doc = results.docs;
+		console.log( doc );
+		return doc;
+	// return _.sortBy( docs, function( d ) {
+	// 	return d.id;
+	// } );
 	};
 
 	return this.eventPackBucket.getByIndex( "aggregate_clock", indexValue )
 		.then( onSuccess );
 };
 
-EventStore.prototype.storeEvents = function( aggregateId, events ) {
+ActorStore.prototype.storeEvents = function( aggregateId, events ) {
 	var doc;
 	var indexes;
 
@@ -86,7 +73,7 @@ EventStore.prototype.storeEvents = function( aggregateId, events ) {
 	return when.all( inserts );
 };
 
-EventStore.prototype.storeEventPack = function( aggregateId, vectorClock, events ) {
+ActorStore.prototype.storeEventPack = function( aggregateId, vectorClock, events ) {
 	var doc = {
 		id: sliver.getId(),
 		aggregate_id: aggregateId,
@@ -102,4 +89,4 @@ EventStore.prototype.storeEventPack = function( aggregateId, vectorClock, events
 	return this.eventPackBucket.put( doc, indexes );
 };
 
-module.exports = EventStore;
+module.exports = ActorStore;
