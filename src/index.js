@@ -1,9 +1,9 @@
-var riaktive = require( 'riaktive' );
-var sliver = require( './sliver.js' )();
+var riaktive = require( "riaktive" );
+var sliver = require( "./sliver.js" )();
 riaktive.setIdStrategy( sliver.getId.bind( sliver ) );
 
-var EventStore = require( './EventStore' );
-var ActorStore = require( './ActorStore' );
+var EventStore = require( "./EventStore" );
+var ActorStore = require( "./ActorStore" );
 
 var cache = {
 	events: {},

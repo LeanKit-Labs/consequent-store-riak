@@ -1,10 +1,10 @@
-var sliver = require( 'sliver' );
+var sliver = require( "sliver" );
 var instance;
 
 module.exports = function( _config ) {
 	var config = _config || {};
 
-	var seed = config.seed || 'seed string';
+	var seed = config.seed || "seed string";
 
 	if ( instance ) {
 		return instance;

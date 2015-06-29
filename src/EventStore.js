@@ -12,13 +12,20 @@
 	};
 */
 
-var util = require( 'util' );
-var _ = require( 'lodash' );
-var when = require( 'when' );
-var sliver = require( './sliver.js' )();
+var util = require( "util" );
+var _ = require( "lodash" );
+var when = require( "when" );
+var sliver = require( "./sliver.js" )();
+
+/**
+ * Storage mechanism for events
+ * @constructor
+ * @param {object} db - Instance of Riaktive
+ * @param {string} type - Name of event store
+ * @params {object} _config - Configuration options for event store
+*/
 
 function EventStore( db, type, _config ) {
-
 	this.db = db;
 	this.name = type;
 
@@ -35,6 +42,13 @@ function EventStore( db, type, _config ) {
 	this.eventPackBucket = this.db.bucket( eventPackBucketName, bucketConfig );
 }
 
+/**
+ * Queries events for an actor since a given event id.
+ * @param {string} aggregateId - The actor's id
+ * @param {string} lastEventId - The lower bound for the event id query
+ * @returns {array} Events since the last id, not including the last id
+*/
+
 EventStore.prototype.getEventsFor = function( aggregateId, lastEventId ) {
 	var indexValue = aggregateId + "-" + lastEventId;
 
@@ -45,24 +59,16 @@ EventStore.prototype.getEventsFor = function( aggregateId, lastEventId ) {
 		} );
 	};
 
-	return this.eventBucket.getByIndex( "aggregate_event_id", indexValue, '~' )
+	return this.eventBucket.getByIndex( "aggregate_event_id", indexValue, "~" )
 		.then( onSuccess );
 };
 
-EventStore.prototype.getEventPackFor = function( aggregateId, vectorClock ) {
-	var indexValue = aggregateId + "-" + vectorClock;
-
-	var onSuccess = function( results ) {
-		var events = results.docs[ 0 ].events;
-
-		return _.sortBy( events, function( d ) {
-			return d.id;
-		} );
-	};
-
-	return this.eventPackBucket.getByIndex( "aggregate_clock", indexValue )
-		.then( onSuccess );
-};
+/**
+ * Stores a list of events as individual records related to the actor id
+ * @param {string} aggregatId - The related actor's id
+ * @params {array} events - Collection of events to store
+ * @returns {array} Riak id's for inserted records
+*/
 
 EventStore.prototype.storeEvents = function( aggregateId, events ) {
 	var doc;
@@ -85,6 +91,36 @@ EventStore.prototype.storeEvents = function( aggregateId, events ) {
 
 	return when.all( inserts );
 };
+
+/**
+ * Queries an event pack for a specific version of an actor.
+ * @param {string} aggregateId - The actor's id
+ * @param {string} vectorClock - Actor version
+ * @returns {array} Events from the retrieved event pack
+*/
+
+EventStore.prototype.getEventPackFor = function( aggregateId, vectorClock ) {
+	var indexValue = aggregateId + "-" + vectorClock;
+
+	var onSuccess = function( results ) {
+		var events = results.docs[ 0 ].events;
+
+		return _.sortBy( events, function( d ) {
+			return d.id;
+		} );
+	};
+
+	return this.eventPackBucket.getByIndex( "aggregate_clock", indexValue )
+		.then( onSuccess );
+};
+
+/**
+ * Stores a collection of events as a single record associated with a version of an actor
+ * @param {string} aggregateId - The actor's id
+ * @param {string} vectorClock - The actor's version
+ * @param {array} events - Collection of events to store
+ * @returns {string} Id of created recorded
+*/
 
 EventStore.prototype.storeEventPack = function( aggregateId, vectorClock, events ) {
 	var doc = {

@@ -98,7 +98,8 @@
 		"global",
 		"setTimeout",
 		"module",
-		"__dirname"
+		"__dirname",
+		"config"
 	],
 
 	// LEGACY
