@@ -85,13 +85,13 @@ EventStore.prototype.storeEvents = function( aggregateId, events ) {
 	var inserts = _.map( events, function( event ) {
 		doc = {
 			id: sliver.getId(),
-			aggregate_id: aggregateId,
+			aggregate_id: aggregateId, // jshint ignore:line
 			event: event
 		};
 
 		indexes = {
-			aggregate_id: aggregateId,
-			aggregate_event_id: aggregateId + "-" + doc.id
+			aggregate_id: aggregateId, // jshint ignore:line
+			aggregate_event_id: aggregateId + "-" + doc.id // jshint ignore:line
 		};
 
 		return this.eventBucket.put( doc, indexes );
@@ -133,14 +133,14 @@ EventStore.prototype.getEventPackFor = function( aggregateId, vectorClock ) {
 EventStore.prototype.storeEventPack = function( aggregateId, vectorClock, events ) {
 	var doc = {
 		id: sliver.getId(),
-		aggregate_id: aggregateId,
+		aggregate_id: aggregateId, // jshint ignore:line
 		events: events
 	};
 
 	var indexes = {
-		aggregate_id: aggregateId,
-		aggregate_clock: aggregateId + "-" + vectorClock,
-		aggregate_pack_id: aggregateId + "-" + doc.id
+		aggregate_id: aggregateId, // jshint ignore:line
+		aggregate_clock: aggregateId + "-" + vectorClock, // jshint ignore:line
+		aggregate_pack_id: aggregateId + "-" + doc.id // jshint ignore:line
 	};
 
 	return this.eventPackBucket.put( doc, indexes );

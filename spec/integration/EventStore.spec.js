@@ -7,7 +7,6 @@ var riak;
 var sliver;
 
 describe( "Event Store Interface", function() {
-
 	before( function() {
 		adapter = require( "../../src/index.js" )( config );
 		riak = adapter.riak;
@@ -25,9 +24,12 @@ describe( "Event Store Interface", function() {
 		];
 		var ids;
 		var records;
+		var eventBucket;
 		before( function( done ) {
 			aggId = sliver.getId();
 			store = adapter.events.create( "card", {} );
+
+			eventBucket = store.getEventBucket();
 
 			store.storeEvents( aggId, events )
 				.then( function( results ) {
@@ -35,9 +37,8 @@ describe( "Event Store Interface", function() {
 					return ids;
 				} )
 				.then( function( ids ) {
-
 					var gets = _.map( ids, function( id ) {
-						return riak.card_events.get( id );
+						return eventBucket.get( id );
 					} );
 
 					return when.all( gets );
@@ -49,9 +50,8 @@ describe( "Event Store Interface", function() {
 		} );
 
 		after( function( done ) {
-
 			var deletes = _.each( ids, function( id ) {
-				return riak.card_events.del( id );
+				return eventBucket.del( id );
 			} );
 
 			when.all( deletes )
@@ -62,17 +62,17 @@ describe( "Event Store Interface", function() {
 
 		it( "should save a document for each event", function() {
 			_.pick( records[ 0 ], "aggregate_id", "event" ).should.eql( {
-				aggregate_id: aggId,
+				aggregate_id: aggId, // jshint ignore:line
 				event: events[ 0 ]
 			} );
 
 			_.pick( records[ 1 ], "aggregate_id", "event" ).should.eql( {
-				aggregate_id: aggId,
+				aggregate_id: aggId, // jshint ignore:line
 				event: events[ 1 ]
 			} );
 
 			_.pick( records[ 2 ], "aggregate_id", "event" ).should.eql( {
-				aggregate_id: aggId,
+				aggregate_id: aggId, // jshint ignore:line
 				event: events[ 2 ]
 			} );
 		} );
@@ -81,23 +81,22 @@ describe( "Event Store Interface", function() {
 			var indexes = _.pluck( records, "_indexes.aggregate_id" );
 
 			_.map( indexes, function( i ) {
-				return i.toString()
+				return i.toString();
 			} ).should.eql( [
 				aggId,
 				aggId,
 				aggId
 			] );
 
-			var event_id_indexes = _.pluck( records, "_indexes.aggregate_event_id" );
-			_.map( event_id_indexes, function( i ) {
-				return i.toString()
+			var eventIdIndexes = _.pluck( records, "_indexes.aggregate_event_id" ); // jshint ignore:line
+			_.map( eventIdIndexes, function( i ) {
+				return i.toString();
 			} ).should.eql( [
 				aggId + "-" + records[ 0 ].id,
 				aggId + "-" + records[ 1 ].id,
 				aggId + "-" + records[ 2 ].id
 			] );
 		} );
-
 	} );
 
 	describe( "when retrieving events", function() {
@@ -112,10 +111,11 @@ describe( "Event Store Interface", function() {
 		];
 		var ids;
 		var records;
+		var eventBucket;
 		before( function( done ) {
 			aggId = sliver.getId();
 			store = adapter.events.create( "card", {} );
-
+			eventBucket = store.getEventBucket();
 			store.storeEvents( aggId, events )
 				.then( function( results ) {
 					ids = results;
@@ -132,7 +132,7 @@ describe( "Event Store Interface", function() {
 
 		after( function( done ) {
 			var deletes = _.each( ids, function( id ) {
-				return riak.card_events.del( id );
+				return eventBucket.del( id );
 			} );
 
 			when.all( deletes )
@@ -168,7 +168,7 @@ describe( "Event Store Interface", function() {
 					return id;
 				} )
 				.then( function( ids ) {
-					return riak.card_event_packs.get( id );
+					return riak.card_event_packs.get( id ); // jshint ignore:line
 				} )
 				.then( function( result ) {
 					record = result;
@@ -177,7 +177,7 @@ describe( "Event Store Interface", function() {
 		} );
 
 		after( function( done ) {
-			riak.card_event_packs.del( id )
+			riak.card_event_packs.del( id ) // jshint ignore:line
 				.then( function() {
 					done();
 				} );
@@ -189,11 +189,10 @@ describe( "Event Store Interface", function() {
 		} );
 
 		it( "should index on the aggregate id", function() {
-			record._indexes.aggregate_id.toString().should.equal( aggId );
-			record._indexes.aggregate_pack_id.toString().should.equal( aggId + "-" + id );
-			record._indexes.aggregate_clock.toString().should.equal( aggId + "-" + clock );
+			record._indexes.aggregate_id.toString().should.equal( aggId ); // jshint ignore:line
+			record._indexes.aggregate_pack_id.toString().should.equal( aggId + "-" + id ); // jshint ignore:line
+			record._indexes.aggregate_clock.toString().should.equal( aggId + "-" + clock ); // jshint ignore:line
 		} );
-
 	} );
 
 	describe( "when retrieving event packs", function() {
@@ -204,7 +203,6 @@ describe( "Event Store Interface", function() {
 		var records;
 		var clock;
 		before( function( done ) {
-
 			events = [
 				{ name: "card1", id: sliver.getId() },
 				{ name: "card2", id: sliver.getId() },
@@ -227,7 +225,7 @@ describe( "Event Store Interface", function() {
 		} );
 
 		after( function( done ) {
-			riak.card_event_packs.del( id )
+			riak.card_event_packs.del( id ) // jshint ignore:line
 				.then( function() {
 					done();
 				} );
@@ -236,7 +234,5 @@ describe( "Event Store Interface", function() {
 		it( "should return the list of events", function() {
 			records.should.eql( events );
 		} );
-
 	} );
-
 } );

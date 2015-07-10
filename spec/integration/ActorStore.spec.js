@@ -65,6 +65,8 @@ describe( "Actor Store Interface", function() {
 		var vectorClock2;
 		var store;
 		var results;
+		var actorStore;
+		var actoreIdPrefix;
 
 		before( function( done ) {
 			actorStore = adapter.actors.create( "boards" );
@@ -119,6 +121,7 @@ describe( "Actor Store Interface", function() {
 			var getStub;
 			var actorId;
 			var result;
+			var actorIdPrefix;
 			var N0, N1, N2, N3, N4, N5, N6;
 			before( function( done ) {
 				actorId = sliver.getId();

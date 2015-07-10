@@ -1,7 +1,10 @@
 var _ = require( "lodash" );
 var when = require( "when" );
 var parallel = require( "when/parallel" );
-var sliver = require( "./sliver.js" )();
+
+function clockToId( actorId, clock ) {
+	return actorId + "-" + ( _.isPlainObject( clock ) ? JSON.stringify( clock ) : clock );
+}
 
 /**
  * Storage mechanism for actors
@@ -62,7 +65,7 @@ ActorStore.prototype.store = function( actorId, vectorClock, _actor ) {
 
 	return this.actorBucket.get( actorId )
 		.then( function( result ) {
-			if ( _.isArray( result ) ) {
+			if ( _.isArray( result ) ) { // jshint ignore:line
 				// You better figure out what to do with Riak siblings
 				// Pick compatible sibling
 				// result = _.find( result, function( r ) {
@@ -76,7 +79,7 @@ ActorStore.prototype.store = function( actorId, vectorClock, _actor ) {
 		var snapshot = _.cloneDeep( actor );
 		var snapshotId = actorId + "-" + actor.vector;
 		var snapshotIndexes = {
-			aggregate_id: actorId
+			aggregate_id: actorId // jshint ignore:line
 		};
 
 		if ( result && result.vclock ) {
@@ -225,9 +228,5 @@ ActorStore.prototype._findAncestor = function( actorId, siblings, ancestry, comp
 			return this._findAncestor( actorId, siblings, ancestry, compareFn );
 		}.bind( this ) );
 };
-
-function clockToId( actorId, clock ) {
-	return actorId + "-" + ( _.isPlainObject( clock ) ? JSON.stringify( clock ) : clock );
-}
 
 module.exports = ActorStore;
