@@ -1,3 +1,3 @@
-# consequent-events-riak
+# consequent-store-riak
 
-Event storage adapter for [Consequent](https://github.com/arobson/consequent)
+Riak storage adapter for [Consequent](https://github.com/arobson/consequent)
