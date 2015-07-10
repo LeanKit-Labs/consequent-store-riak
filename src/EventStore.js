@@ -35,11 +35,19 @@ function EventStore( db, type, _config ) {
 	var eventPackBucketName = config.eventPackBucket || util.format( "%s_event_packs", this.name.toLowerCase() );
 
 	var bucketConfig = {
-		write_once: true
+		bucket_type: config.eventBucketType || "default" // jshint ignore:line
 	};
 
 	this.eventBucket = this.db.bucket( eventBucketName, bucketConfig );
 	this.eventPackBucket = this.db.bucket( eventPackBucketName, bucketConfig );
+
+	this.getEventBucket = function() {
+		return this.eventBucket;
+	};
+
+	this.getEventPackBucket = function() {
+		return this.eventPackBucket;
+	};
 }
 
 /**
