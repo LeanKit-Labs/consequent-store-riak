@@ -34,6 +34,11 @@ function EventStore( db, type, _config ) {
 	var eventBucketName = config.eventBucket || util.format( "%s_events", this.name.toLowerCase() );
 	var eventPackBucketName = config.eventPackBucket || util.format( "%s_event_packs", this.name.toLowerCase() );
 
+	if ( config.bucketPrefix ) {
+		eventBucketName = util.format( "%s_%s", config.bucketPrefix, eventBucketName );
+		eventPackBucketName = util.format( "%s_%s", config.bucketPrefix, eventPackBucketName );
+	}
+
 	var bucketConfig = {
 		bucket_type: config.eventBucketType || "default" // jshint ignore:line
 	};

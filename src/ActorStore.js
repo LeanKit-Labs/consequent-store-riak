@@ -1,4 +1,5 @@
 var _ = require( "lodash" );
+var util = require( "util" );
 var when = require( "when" );
 var parallel = require( "when/parallel" );
 
@@ -22,7 +23,13 @@ function ActorStore( db, type, _config ) {
 
 	var actorBucketName = config.actorBucket || this.name.toLowerCase();
 
-	var bucketConfig = {};
+	if ( config.bucketPrefix ) {
+		actorBucketName = util.format( "%s_%s", config.bucketPrefix, actorBucketName );
+	}
+
+	var bucketConfig = {
+		bucket_type: config.actorBucketType || "default" // jshint ignore:line
+	};
 
 	this.actorBucket = this.db.bucket( actorBucketName, bucketConfig );
 }

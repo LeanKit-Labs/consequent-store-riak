@@ -13,14 +13,25 @@ var cache = {
 module.exports = function( _config ) {
 	var config = _config || {};
 
-	var riak = riaktive.connect( config.riak );
+	var bucketPrefix = config.bucketPrefix || null;
+
+	var riak;
+	if ( config.db ) {
+		riak = config.db;
+	} else {
+		riak = riaktive.connect( config.riak );
+	}
 
 	return {
 		events: {
 			create: function( actorType, config ) {
+				config = config || {};
 				if ( cache.events[ actorType ] ) {
 					return cache.events[ actorType ];
 				}
+
+				config.bucketPrefix = bucketPrefix;
+
 				var store = new EventStore( riak, actorType, config );
 
 				cache.events[ actorType ] = store;
@@ -30,9 +41,13 @@ module.exports = function( _config ) {
 		},
 		actors: {
 			create: function( actorType, config ) {
+				config = config || {};
 				if ( cache.actors[ actorType ] ) {
 					return cache.actors[ actorType ];
 				}
+
+				config.bucketPrefix = bucketPrefix;
+
 				var store = new ActorStore( riak, actorType, config );
 
 				cache.actors[ actorType ] = store;
